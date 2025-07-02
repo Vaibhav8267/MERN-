@@ -1,5 +1,6 @@
 const express=require("express");
 const app=express();
+const ExpressError=require("./ExpressErr.js");
 const mongoose=require("mongoose");
 const Listing = require("./models/listing.js");
 const path=require("path");
@@ -22,10 +23,22 @@ main().then(()=>{
     console.log(err);
 });
 
+//API
+const checkToken=(req,res,next)=>{
+    let {token}=req.query;
+    if(token==="access"){
+         next();
+    }
+    throw new Error("Access Denied!");
+};
+app.get("/api",checkToken,(req,res)=>{
+    res.send("data");
+});
+
 
 //Home Route
 app.get("/",(req,res)=>{
-    res.send("Working");
+    res.send("Welcome to home :)");
 });
 //Display all Data
 app.get("/Listings",async(req,res)=>{
@@ -38,7 +51,6 @@ app.get("/Listings/new",(req,res)=>{
 });
 //insert values
 app.post("/Listings/add",async (req,res)=>{
-    // let{ title:newTitle,description:newDescription,image:newImage,price:newPrice,location:newLocation,country:newCountry}=req.body;
     const newListings= new Listing( req.body.Listing);
     await newListings.save();
     res.redirect("/Listings");
@@ -67,6 +79,21 @@ app.delete("/Listing/:id",async(req,res)=>{
     let{id}=req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/Listings");
+});
+//Error
+app.get("/err",(req,res)=>{
+    abc=abc;
+});
+
+app.get("/admin",(req,res)=>{
+    throw new ExpressError(403,"Access to admin denied ");
+})
+
+app.use((err,req,res,next)=>{
+    let{status=500,message="Some error"}=err;
+    res.status(status).send(message);
+    console.log("-----------ERROR-----------");
+    // next(err);
 })
 // //Test Database
 // app.get("/test",async(req,res)=>{
