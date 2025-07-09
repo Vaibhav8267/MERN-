@@ -1,9 +1,9 @@
-<% layout('/layouts/boilerplate') -%><body></body>
+<% layout('/layouts/boilerplate') -%>
 <body>
     <div class="row">
         <div class="col-8 offset-2">
     <h2>Update your listings</h2>
-    <form action="/Listing/<%=list._id%>?_method=PUT" method="POST">
+    <form action="/Listings/<%=list._id%>?_method=PUT" method="POST">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
             <input type="text" name="Listing[title]" value="<%=list.title%>" class="form-control"/>

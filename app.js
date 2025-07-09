@@ -1,11 +1,14 @@
 const express=require("express");
 const app=express();
-const ExpressError=require("./ExpressErr.js");
 const mongoose=require("mongoose");
 const Listing = require("./models/listing.js");
 const path=require("path");
 const methodOverride=require("method-override");
 const ejsMate=require("ejs-mate");
+const wrapAsync = require("./utils/wrapAsync.js");
+const ExpressError = require("./Utils/ExpressError");
+
+
 //Middlewares
 app.set("view engine","ejs");
 app.set("views",path.join(__dirname,"views"));
@@ -35,6 +38,7 @@ app.get("/api",checkToken,(req,res)=>{
     res.send("data");
 });
 
+//LISTINGS
 
 //Home Route
 app.get("/",(req,res)=>{
@@ -49,65 +53,57 @@ app.get("/Listings",async(req,res)=>{
 app.get("/Listings/new",(req,res)=>{
        res.render("listings/new");
 });
-//insert values
-app.post("/Listings/add",async (req,res)=>{
-    const newListings= new Listing( req.body.Listing);
-    await newListings.save();
+//Create Route
+app.post("/Listings/add", wrapAsync(async (req, res,next) => {
+    const newListing = new Listing(req.body.Listing);
+    await newListing.save();
     res.redirect("/Listings");
-});
+}));
+
 //Edit routes
-app.get("/Listing/:id/edit",async(req,res)=>{
-    let {id}=req.params;
-    const list= await Listing.findById(id);
-    console.log(list);
-    res.render("listings/edit",{list});
+app.get("/Listings/:id/edit", async (req, res, next) => {
+    let { id } = req.params;
+    const list = await Listing.findById(id);
+    if (!list) {
+        return next(new ExpressError(404, "Listing not found"));
+    }
+    res.render("listings/edit", { list });
 });
+
 //Show routes
-app.get("/listings/:id",async(req,res)=>{
-    let {id}=req.params;
-    const listing= await Listing.findById(id);
-    res.render("listings/show",{listing});
+app.get("/Listings/:id", async (req, res, next) => {
+    let { id } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+        return next(new ExpressError(404, "Listing not found"));
+    }
+    res.render("listings/show", { listing });
 });
 //Update route
-app.put("/Listing/:id",async(req,res)=>{
+app.put("/Listings/:id",async(req,res)=>{
     let {id}=req.params;
     await Listing.findByIdAndUpdate(id,{...req.body.Listing}) //it is our javascript object by this we can deconstruct  to take all parameters as individual values 
     res.redirect("/Listings");
 });
 //DELETE route
-app.delete("/Listing/:id",async(req,res)=>{
+app.delete("/Listings/:id",async(req,res)=>{
     let{id}=req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/Listings");
 });
-//Error
-app.get("/err",(req,res)=>{
-    abc=abc;
-});
+// // //Error midddleware for all
+// app.all("*", (req, res, next) => {
+//     next(new ExpressError(404, "Page Not Found"));
+// });
 
-app.get("/admin",(req,res)=>{
-    throw new ExpressError(403,"Access to admin denied ");
-})
-
+//Error middleware
 app.use((err,req,res,next)=>{
     let{status=500,message="Some error"}=err;
-    res.status(status).send(message);
+    res.render("listings/error.ejs",{message})
+    // res.status(status).send(message);
     console.log("-----------ERROR-----------");
-    // next(err);
-})
-// //Test Database
-// app.get("/test",async(req,res)=>{
-    //     let sampleListing=new Listing({
-        //         title:"My new Villa",
-        //         description:"By the beach",
-        //         price:"1200",
-        //         location:"Calagute,Goa",
-        //         contry:"India"
-        //     });
-        //     sampleListing.save();
-        //     console.log("Sample was saved");
-        //     res.send("Success"); 
-        // });
+    // res.send("Something went wrong!!");
+});
 
 //Creating Port request
 app.listen(8080,()=>{

@@ -16,12 +16,13 @@
     "url": "https://github.com/Vaibhav8267/WanderLust/issues"
   },
   "homepage": "https://github.com/Vaibhav8267/WanderLust#readme",
-  "description": "",
   "dependencies": {
     "ejs": "^3.1.10",
     "ejs-mate": "^4.0.0",
     "express": "^5.1.0",
     "method-override": "^3.0.0",
-    "mongoose": "^8.15.1"
-  }
+    "mongoose": "^8.16.1"
+  },
+  "devDependencies": {},
+  "description": ""
 }

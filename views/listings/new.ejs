@@ -5,7 +5,7 @@
     <div class="col-8 offset-2">
       <br><br>
       <h3>Create a New Listing</h3>
-      <form id="listingForm" method="POST" action="/Listings/add" novalidate class="needs-validation">
+      <form id="listingForm" method="POST" action="/Listings/add"     class="row g-3  needs-validation" novalidate>
         
         <div class="mb-3">
           <label for="title" class="form-label">Title</label>
@@ -17,84 +17,68 @@
             class="form-control"
             required
           />
-          <div class="invalid-feedback">
-            Please enter a title <i class="fas fa-arrow-right ms-2"></i>
-          </div>
+          <div class="invalid-feedback">Please enter title</div>
         </div>
-
+        
         <div class="mb-3">
           <label for="description" class="form-label">Description</label>    
           <textarea
-            id="description"
-            name="Listing[description]"
-            class="form-control"
-            required
+          id="description"
+          name="Listing[description]"
+          class="form-control"
+          required
           ></textarea>
-          <div class="invalid-feedback">
-            Please enter a description <i class="fas fa-arrow-right ms-2"></i>
-          </div>
+          <div class="invalid-feedback">Please enter a short description</div>
         </div>
-
+        
         <div class="mb-3">
           <label for="image" class="form-label">Image Link</label>
           <input
-            id="image"
-            name="Listing[image]"
-            placeholder="enter image URL/Link"
-            type="text"
-            class="form-control"
-            required
+          id="image"
+          name="Listing[image]"
+          placeholder="enter image URL/Link"
+          type="text"
+          class="form-control"
           />
-          <div class="invalid-feedback">
-            Please enter an image URL <i class="fas fa-arrow-right ms-2"></i>
-          </div>
         </div>
-
+        
         <div class="row">
           <div class="mb-3 col-md-4">
             <label for="price" class="form-label">Price</label>    
             <input
-              id="price"
-              name="Listing[price]"
-              placeholder="enter price"
-              type="number"
-              class="form-control"
-              required
-              min="0"
+            id="price"
+            name="Listing[price]"
+            placeholder="enter price"
+            class="form-control"
+            required
             />
-            <div class="invalid-feedback">
-              Please enter a valid price <i class="fas fa-arrow-right ms-2"></i>
-            </div>
+            <div class="invalid-feedback">Please enter valid amount</div>
           </div> 
           <div class="mb-3 col-md-8">
             <label for="country" class="form-label">Country</label>
             <input
-              id="country"
-              name="Listing[country]"
-              placeholder="enter country"
-              type="text"
-              class="form-control"
-              required
-            />
-            <div class="invalid-feedback">
-              Please enter a country <i class="fas fa-arrow-right ms-2"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label for="location" class="form-label">Location</label>
-          <input
-            id="location"
-            name="Listing[location]"
-            placeholder="enter location"
+            id="country"
+            name="Listing[country]"
+            placeholder="enter country"
             type="text"
             class="form-control"
             required
-          />
-          <div class="invalid-feedback">
-            Please enter a location <i class="fas fa-arrow-right ms-2"></i>
+            />
+            <div class="invalid-feedback">Please enter country</div>
           </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="location" class="form-label">Location</label>
+          <input
+          id="location"
+          name="Listing[location]"
+          placeholder="enter location"
+          type="text"
+          class="form-control"
+          required
+          />
+          <div class="invalid-feedback">Please enter Location</div>
         </div>
 
         <button type="submit" class="btn btn-dark add-btn">Add</button>
@@ -102,21 +86,25 @@
       </form>
     </div>
   </div>
+  <!-- <script >
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+(() => {
+  'use strict'
 
-  <script>
-    // Bootstrap 5 custom validation script
-    (() => {
-      'use strict'
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  const forms = document.querySelectorAll('.needs-validation')
 
-      const form = document.getElementById('listingForm')
+  // Loop over them and prevent submission
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
 
-      form.addEventListener('submit', event => {
-        if (!form.checkValidity()) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        form.classList.add('was-validated')
-      }, false)
-    })()
-  </script>
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+  </script> -->
 </body>
