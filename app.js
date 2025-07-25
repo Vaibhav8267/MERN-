@@ -7,7 +7,7 @@ const methodOverride=require("method-override");
 const ejsMate=require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./Utils/ExpressError");
-
+const {ListingSchema}= require("./schema.js");
 
 //Middlewares
 app.set("view engine","ejs");
@@ -16,6 +16,19 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
+
+//Validate Middleware
+const validateListing=(req,res,next)=>{
+    let {error}=  ListingSchema.validate(req.body);
+  if(error){
+    let errMsg= error.details.map((el)=>el.message).join(",");
+    throw new ExpressError(404, errMsg);
+  }else{
+    next();
+  }
+}
+
+
 //Connet to Data base
 async function main(){
     await mongoose.connect('mongodb://127.0.0.1:27017/wanderlust')
@@ -46,6 +59,7 @@ app.get("/",(req,res)=>{
 });
 //Display all Data
 app.get("/Listings",async(req,res)=>{
+     
     let allListings= await Listing.find({});
     res.render("listings/index.ejs",{allListings});
 })
@@ -54,8 +68,8 @@ app.get("/Listings/new",(req,res)=>{
        res.render("listings/new");
 });
 //Create Route
-app.post("/Listings/add", wrapAsync(async (req, res,next) => {
-    const newListing = new Listing(req.body.Listing);
+app.post("/Listings/add", validateListing,wrapAsync(async (req, res,next) => {
+  const newListing=new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/Listings");
 }));
@@ -64,9 +78,6 @@ app.post("/Listings/add", wrapAsync(async (req, res,next) => {
 app.get("/Listings/:id/edit", async (req, res, next) => {
     let { id } = req.params;
     const list = await Listing.findById(id);
-    if (!list) {
-        return next(new ExpressError(404, "Listing not found"));
-    }
     res.render("listings/edit", { list });
 });
 
@@ -74,27 +85,26 @@ app.get("/Listings/:id/edit", async (req, res, next) => {
 app.get("/Listings/:id", async (req, res, next) => {
     let { id } = req.params;
     const listing = await Listing.findById(id);
-    if (!listing) {
-        return next(new ExpressError(404, "Listing not found"));
-    }
     res.render("listings/show", { listing });
 });
 //Update route
-app.put("/Listings/:id",async(req,res)=>{
+app.put("/Listings/:id",validateListing,wrapAsync(async(req,res)=>{
     let {id}=req.params;
     await Listing.findByIdAndUpdate(id,{...req.body.Listing}) //it is our javascript object by this we can deconstruct  to take all parameters as individual values 
     res.redirect("/Listings");
-});
+    
+})
+);
 //DELETE route
 app.delete("/Listings/:id",async(req,res)=>{
     let{id}=req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/Listings");
 });
-// // //Error midddleware for all
-// app.all("*", (req, res, next) => {
-//     next(new ExpressError(404, "Page Not Found"));
-// });
+// //Error midddleware for all
+app.all(/.*/, (req, res, next) => {
+    next(new ExpressError(404, "Page Not Found"));
+});
 
 //Error middleware
 app.use((err,req,res,next)=>{
