@@ -1,121 +1,139 @@
-const express=require("express");
-const app=express();
-const mongoose=require("mongoose");
-const Listing = require("./models/listing.js");
-const path=require("path");
-const methodOverride=require("method-override");
-const ejsMate=require("ejs-mate");
-const wrapAsync = require("./utils/wrapAsync.js");
-const ExpressError = require("./Utils/ExpressError");
-const {ListingSchema}= require("./schema.js");
+require('dotenv').config();
+console.log(process.env.SECRET);
 
-//Middlewares
-app.set("view engine","ejs");
-app.set("views",path.join(__dirname,"views"));
-app.use(express.urlencoded({extended:true}));
-app.use(methodOverride("_method"));
-app.engine("ejs",ejsMate);
-app.use(express.static(path.join(__dirname,"/public")));
+const express = require("express");
+const app = express();
+const mongoose = require("mongoose");
+const path = require("path");
+const multer  = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
-//Validate Middleware
-const validateListing=(req,res,next)=>{
-    let {error}=  ListingSchema.validate(req.body);
-  if(error){
-    let errMsg= error.details.map((el)=>el.message).join(",");
-    throw new ExpressError(404, errMsg);
-  }else{
-    next();
-  }
+const methodOverride = require("method-override");
+const ejsMate = require("ejs-mate");
+
+const session = require("express-session");
+const flash = require("connect-flash");
+
+const listingRouter = require("./routers/listing.js");
+const reviewRouter = require("./routers/reviews.js");
+const userRouter = require("./routers/user.js");
+const ExpressError = require("./views/Utils/ExpressError.js")
+
+
+//Passport setting up
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const user = require("./models/user.js");
+const { date } = require("joi");
+
+//session option
+const sessionOptions = {
+    secret: "Mysecret",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        expires: Date.now() + 7 * 24 * 60 * 60 * 100,
+        maxAge: 7 * 24 * 60 * 60 * 100,
+        httpOnly: true,
+    },
 }
 
 
-//Connet to Data base
-async function main(){
-    await mongoose.connect('mongodb://127.0.0.1:27017/wanderlust')
-};
-main().then(()=>{
-    console.log("Connected  to DataBase");
-}).catch((err)=>{
-    console.log(err);
-});
 
-//API
-const checkToken=(req,res,next)=>{
-    let {token}=req.query;
-    if(token==="access"){
-         next();
+//Middlewares
+app.use(session(sessionOptions));
+app.use(flash());
+
+//passport
+app.use(passport.initialize());
+app.use(passport.session());//require to know that wheater the same user is sending req to another page of diff user  
+passport.use(new LocalStrategy(user.authenticate()));
+passport.serializeUser(user.serializeUser()); //store user data into session
+passport.deserializeUser(user.deserializeUser());
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.engine("ejs", ejsMate);
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "public")));
+
+//Connect to Database
+mongoose.connect('mongodb://127.0.0.1:27017/wanderlust')
+    .then(() => console.log("Connected to Database"))
+    .catch(err => console.log(err));
+
+//API example
+const checkToken = (req, res, next) => {
+    let { token } = req.query;
+    if (token === "access") {
+        return next();
     }
     throw new Error("Access Denied!");
 };
-app.get("/api",checkToken,(req,res)=>{
+app.get("/api", checkToken, (req, res) => {
     res.send("data");
 });
 
-//LISTINGS
+app.use((req, res, next) => {
+    res.locals.currUser = req.user;
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    next();
+});
+// //logger--morgan
+// app.use((req, res, next) => {
+//     req.time = new Date(Date.now()).toString();
+//     console.log(req.method, req.hostname, req.path, req.time);
+//     next();
+// });
 
-//Home Route
-app.get("/",(req,res)=>{
+
+//Routers
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewRouter);
+
+// passport Router
+app.use("/", userRouter);
+
+
+app.get("/", (req, res) => {
     res.send("Welcome to home :)");
 });
-//Display all Data
-app.get("/Listings",async(req,res)=>{
-     
-    let allListings= await Listing.find({});
-    res.render("listings/index.ejs",{allListings});
-})
-//Create new listings
-app.get("/Listings/new",(req,res)=>{
-       res.render("listings/new");
-});
-//Create Route
-app.post("/Listings/add", validateListing,wrapAsync(async (req, res,next) => {
-  const newListing=new Listing(req.body.listing);
-    await newListing.save();
-    res.redirect("/Listings");
-}));
+// app.use("/api", (req, res, next) => {
+//     const checkToken = (req, res, next) => {
+//     let { token } = req.query;
+//     if (token === "access") {
+//         return next();
+//     }
+//     throw new Error("Access Denied!");
+// }
+// })
+// //404
+// app.use((req, res, next) => {
+//     res.send("Page Not Found ");
+//     next();
+// });
 
-//Edit routes
-app.get("/Listings/:id/edit", async (req, res, next) => {
-    let { id } = req.params;
-    const list = await Listing.findById(id);
-    res.render("listings/edit", { list });
-});
+// app.get("/api", (req, res) => {
+//     res.send("Data")
+// })
 
-//Show routes
-app.get("/Listings/:id", async (req, res, next) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    res.render("listings/show", { listing });
-});
-//Update route
-app.put("/Listings/:id",validateListing,wrapAsync(async(req,res)=>{
-    let {id}=req.params;
-    await Listing.findByIdAndUpdate(id,{...req.body.Listing}) //it is our javascript object by this we can deconstruct  to take all parameters as individual values 
-    res.redirect("/Listings");
-    
-})
-);
-//DELETE route
-app.delete("/Listings/:id",async(req,res)=>{
-    let{id}=req.params;
-    await Listing.findByIdAndDelete(id);
-    res.redirect("/Listings");
-});
-// //Error midddleware for all
+//Home Route
+
+//404 Middleware
 app.all(/.*/, (req, res, next) => {
     next(new ExpressError(404, "Page Not Found"));
 });
 
 //Error middleware
-app.use((err,req,res,next)=>{
-    let{status=500,message="Some error"}=err;
-    res.render("listings/error.ejs",{message})
-    // res.status(status).send(message);
-    console.log("-----------ERROR-----------");
-    // res.send("Something went wrong!!");
+app.use((err, req, res, next) => {
+    console.log("---ERROR---", err);
+    const { status = 500, message = "Something went wrong" } = err;
+    res.status(status).render("listings/error.ejs", { err ,...res.locals});
 });
 
-//Creating Port request
-app.listen(8080,()=>{
-console.log("Server is listening to port : 8080");
+//Start server
+app.listen(8080, () => {
+    console.log("Server listening on port 8080");
 });

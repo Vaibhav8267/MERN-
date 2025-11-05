@@ -5,7 +5,9 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
-
+.heading{
+    text-align: center;
+}
 .container{
     flex: 1;
 }
@@ -17,6 +19,7 @@ body {
 }
 .nav-link{
     color: #222222 !important;
+    font-weight: bold;
 }
 /* Navbar icon */
 .fa-compass{
@@ -55,29 +58,44 @@ body {
     justify-content: space-evenly;
 }
 /* Cards */
-.card{
+.listing-card {
     border: none !important;
     margin-bottom: 2rem;
+    position: relative; /* added */
+    overflow: hidden;   /* added to contain overlay */
+    border-radius: 1rem; /* match image rounding */
 }
-.card-img-top{
+
+.card-img-top {
     border-radius: 1rem !important;
     width: 100% !important;
     object-fit: cover !important;
+    display: block;
+}
+
+.card-img-overlay {
+    position: absolute;  /* added */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: opacity 0.3s ease;
+}
+
+.listing-card:hover .card-img-overlay {
+    opacity: 1; /* show overlay on hover */
 }
 .card-body{
     padding: 0 !important;
+    border: none !important;
+    color: black;
 }
 .Listing-link{
     text-decoration: none;
 }
-/* Card Effect */
-.card-img-overlay{
-    opacity: 0;
-}
-.card-img-overlay:hover{
-    opacity: 0.2;
-    background-color: white;
-}
+
 /* Button */
 .add-btn{
     background-color: #fe424d !important;
@@ -96,7 +114,12 @@ body {
     display: flex;
 
 }
-.show-card{
-    padding-left: 0;
-    padding-right: 0;
+.show-card {
+    /* Target the specific card container on the show page */
+    border: none !important; 
+    box-shadow: none !important; /* Recommended to remove any subtle box shadow */
+}
+.card {
+    border: none !important; 
+    box-shadow: none !important; 
 }
