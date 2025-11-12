@@ -1,3 +1,31 @@
+<style>
+  .btn-search {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    /* padding: 0 1rem 0 1rem; */
+    background-color: #fe424d;
+    color: #fff;
+  }
+
+  .btn-search:hover {
+    background-color: #fe424d;
+    color: #fff;
+  }
+
+  .btn-search i {
+    margin-top: 0.2rem;
+    margin-right: 0.5rem;
+  }
+
+  .search-box {
+    border-radius: 25px;
+    padding: 0.5rem 3rem 0.5rem 3rem ;
+  }
+</style>
+
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="/"><i class="fa-regular fa-compass"></i></a>
@@ -11,13 +39,20 @@
         <a class="nav-link" href="/Listings/new">Add New Listings</a>
       </div>
       <div class="navbar-nav ms-auto">
+        <form class="d-flex" role="search">
+          <input class="form-control me-2 search-box" type="search" placeholder="Search Destinations"
+            aria-label="Search" />
+          <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Search </button>
+        </form>
+      </div>
+      <div class="navbar-nav ms-auto">
         <%if(!currUser){%>
           <a class="nav-link active" href="/signup">Signup</a>
           <a class="nav-link" href="/login">Login</a>
           <%}%>
-           <%if(currUser){%> 
-             <a class="nav-link" href="/logout">Logout</a>
-          <%}%>
+            <%if(currUser){%>
+              <a class="nav-link" href="/logout">Logout</a>
+              <%}%>
       </div>
     </div>
   </div>
