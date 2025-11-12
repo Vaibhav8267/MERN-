@@ -117,7 +117,7 @@ app.use("/", userRouter);
 
 
 app.get("/", (req, res) => {
-    res.send("Welcome to home :)");
+    res.redirect("/listings");
 });
 // app.use("/api", (req, res, next) => {
 //     const checkToken = (req, res, next) => {
