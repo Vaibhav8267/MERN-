@@ -1,6 +1,10 @@
 <% layout('/layouts/boilerplate') -%>
 
     <body>
+        <script>
+            let mapToken = "<%= process.env.MAP_TOKEN %>";
+            let listing = <%-JSON.stringify(listing) %>;
+        </script>
         <div class="row mt-3 mb-3">
             <div class="col-8 offset-3 ">
                 <h3>
@@ -33,7 +37,12 @@
 
                 <!-- <li><%=listing .image%></li> -->
             </div>
+            <%if(currUser){%>
+                <button type="submit" class="btn btn-dark add-btn offset-3 book-btn">Book</button>
+
+                <%}%>
         </div>
+
         <% if(currUser && listing.owner._id.equals(currUser._id)) {%>
             <div class="btns">
                 <a href="/listings/<%=listing._id%>/edit" class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>
@@ -44,6 +53,7 @@
             <% }%>
                 <div class="col-8 offset-3">
                     <%if(currUser){%>
+
                         <hr>
                         <h4>Add a Review</h4>
                         <form action="/listings/<%= listing._id %>/reviews" method="POST" class="needs-validation mb-3"
@@ -79,30 +89,61 @@
                         </form>
                         <%}%>
                             <hr>
-
-                            <h3>Reviews</h3>
-                            <div class="row">
-                                <% for (let review of listing.reviews) { %>
-                                    <div class="card col-5 ms-3 mb-3">
-                                        <div class="card-body">
-                                            <h4 class="card-title">
-                                                <%=review.author.username%>
-                                            </h4>
-                                            <p class="starability-result card-text" data-rating="<%=review.rating%>">
-                                            </p>
-                                            <p class="card-text">
-                                                <%= review.comment %>
-                                            </p>
-                                            <form
-                                                action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
-                                                method="POST" class="mb-3">
-                                                <button class="btn btn-sm btn-dark">DELETE</button>
-                                            </form>
+                            <% if(listing.reviews.length> 0){%>
+                                <div class="row">
+                                    <h3>Reviews</h3>
+                                    <% for (let review of listing.reviews) { %>
+                                        <div class="card col-5 ms-3 mb-3">
+                                            <div class="card-body">
+                                                <h4 class="card-title">
+                                                    <%=review.author.username%>
+                                                </h4>
+                                                <p class="starability-result card-text"
+                                                    data-rating="<%=review.rating%>">
+                                                </p>
+                                                <p class="card-text">
+                                                    <%= review.comment %>
+                                                </p>
+                                                <form
+                                                    action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+                                                    method="POST" class="mb-3">
+                                                    <button class="btn btn-sm btn-dark">DELETE</button>
+                                                </form>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <% } %>
-                            </div>
+                                        <% } %>
+                                </div>
+                                <% } %>
                 </div>
 
+                <div class="col-6 offset-3 mb-3">
+                    <h3>Where you'll be</h3>
+                    <div id="map"></div>
+                </div>
 
+                <div id="popupOverlay">
+                    <div id="popupBox">
+                        <span id="closePopup">&times;</span>
+
+                        <h2>Booking Confirmation</h2>
+                        <p>You are about to book: <strong>
+                                <%= listing.title %>
+                            </strong></p>
+
+                        <div class="popup-content">
+                            <p><strong>Location:</strong>
+                                <%= listing.location %>, <%= listing.country %>
+                            </p>
+                            <p><strong>Price:</strong> ₹<%= listing.price.toLocaleString("en-IN") %>
+                            </p>
+                            <p><strong>Contact owner to get booking confirmed:</strong>
+                                <%= listing.mobile %>
+                            </p>
+
+                        </div>
+
+                        
+                    </div>
+                </div>
+                <script src="/js/map.js"></script>
     </body>

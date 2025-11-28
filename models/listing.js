@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./review");
+const { number, required } = require("joi");
 
 const listingSchema = new Schema({
   title: {
@@ -9,22 +10,39 @@ const listingSchema = new Schema({
   },
   description: String,
   image: {
-   url:String,
-   filename:String,
+    url: String,
+    filename: String,
   },
   price: { type: Number },
   location: String,
   country: String,
-  
+
   reviews: [
     {
       type: Schema.Types.ObjectId,
       ref: "Review",
     }
   ],
-  owner:{
-    type:Schema.Types.ObjectId,
-    ref:"User",
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
+  geometry: 
+  {
+  type:{
+    type: String,
+    enum: ["Point"],
+    required: false,
+  },
+  coordinates: {
+    type: [Number],
+    required: false,
+  }},
+   mobile: {
+    type: String,
+    required: true,  // set to false if optional
+    minlength: 10,
+    maxlength: 10,
   },
 });
 

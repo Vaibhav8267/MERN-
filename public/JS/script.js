@@ -17,3 +17,25 @@
     }, false)
   })
 })()
+
+  const bookBtn = document.querySelector(".book-btn");
+  const popupOverlay = document.getElementById("popupOverlay");
+  const closePopup = document.getElementById("closePopup");
+
+  // Open popup on Book click
+  bookBtn.addEventListener("click", (e) => {
+    e.preventDefault(); // stop form submission
+    popupOverlay.style.display = "flex";
+  });
+
+  // Close popup on X
+  closePopup.onclick = () => {
+    popupOverlay.style.display = "none";
+  };
+
+  // Close when clicking outside popup
+  popupOverlay.onclick = (e) => {
+    if (e.target === popupOverlay) {
+      popupOverlay.style.display = "none";
+    }
+  };
